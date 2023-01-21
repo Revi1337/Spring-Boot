@@ -1,0 +1,31 @@
+// Authentication Flow
+전체적인 흐름.
+
+1. Client 가 로그인 시도
+2. UsernamePasswordAuthenticationFilter 는 Authentication(id + password) 객체를 만듬.
+3. UsernamePasswordAuthenticationFilter 는 AuthenticationManager 에게 인증부탁.(실제 인증 X)
+4. AuthenticationManager 는 UsernamePasswordAuthenticationFilter 로부터 받은 Authentication 을 AuthenticationProvider 에게 다시 인증 위임
+5. AuthenticationProvider 는 .loadUserByUsername(username) 메서드로 유저객체를 요청.
+6. UserDetailsService 는 실제로 유저객체의 username 에 해당하는 이름을 데이터접근 계층인 Repository 에 조회. 여기서 존재하면 Repository 는 User 객체를 UserDetailsService 에 반환함.
+   만약, UserDetailsService 의 조회 결과가 없으면 UsernameNotFoundException 이 발생하게 됨. --> 그 즉시 인증 실패. --> 그 예외는 UsernamePasswordAuthenticationFilter 가 받아서 처리하게 됨.
+
+7. User 객체를 받은 UserDetailsService 는 User 객체를 UserDetails 타입으로 바꿔서 AuthenticationProvider 에게 리턴함.
+8. AuthenticationProvider 는 UserDetails 객체를 리턴받았기 때문에 username(id) 는 인증됬다 생각하고 password 를 검증함
+   password 를 검증할때는 사용자가 loginForm 에서 입력한 password 와 UserDetailsService 에게 리턴받은 UserDetails 객체 안에 있는 password 와 비교하고 검증함.
+   만약, password 검증이 실패하면 BadCredentialsException 이 발생함 --> 그 즉시 인증 실패
+9. ID, Password 모두 검증에 성공하면 AuthenticationProvider 는 2번과 동일한 타입인 Authentication 인증객체를 만듬.
+   하지만 이때는 최종적으로 인증에 성공한 유저객체정보인 UserDetails(Principle) 와 authorities 정보가 들어감.
+   그리고 Authentication 를 AuthenticationManager 에게 다시 전달함.
+10. AuthenticationManager 는 AuthenticationProvider 로부터받은 Authentication 인증 객체를 UsernamePasswordAuthenticationFilter 에게 전달함.
+11. 마지막으로 UsernamePasswordAuthenticationFilter 는 Authentication 를 SecurityContext 에 저장하게 됨. (실제적으로는 UsernamePasswordAuthenticationFilter 의 부모인 AbstractAuthenticationProcessingFilter 가 저장함. )
+- . 이제 Authentication 인증객체를  전역적으로 참조할 수 있게됨. --> ThreadLocal 이 한번 SecurityContext 를 한번 감싸기 때문
+
+* formLogin 에서는 AuthenticationProvider 는 DaoAuthenticationProvider 를 의미 (서비스계층이나 데이터 계층의 값을 요청해서 가져옴)
+
+- INFO
+UsernamePasswordAuthenticationFilter
+UsernamePasswordAuthenticationToken
+AbstractAuthenticationProcessingFilter
+ProviderManager
+DaoAuthenticationProvider
+InMemoryUserDetailsManager
