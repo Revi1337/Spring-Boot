@@ -1,0 +1,42 @@
+// SecurityContextHolder, SecurityContext
+
+- SecurityContext
+1. Authentication 객체가 저장되는 보관소로 필요 시 언제든지 Authentication 객체를 꺼내어 쓸 수 있도록 제공되는 클래스
+2. ThreadLocal 에 저장되어 아무곳에서나 참조가 가능하도록 설계함
+3. 인증이 완료되면 SecurityContext 는 HttpSession 에 저장되어 어플리케이션 전반에 걸쳐 전역적인 참조가 가능함.
+
+- SecurityContextHolder
+SecurityContext 를 감싸고있는 클래스.
+1. SecurityContext 객체 저장 방식
+    - MODE_THREADLOCAL : 스레드당 SecurityContext 객체를 할당. (기본값)
+    - MODE_INHERITABLETHREADLOCAL : 메인 스레드와 자식 스레드에 관하여 동일한 SecurityContext 를 유지
+    - MODE_GLOBAL : 응용 프로그램에서 단 하나의 SecurityContext 를 저장한다.
+2. SecurityContextHolder.clearContext() : SecurityContext 기존 정보 초기화
+
+- Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
+
+- SecurityContextHolder, SecurityContext 적재 순서
+1. 사용자가 로그인 시도
+2. 서버는 로그인 요청을 받고 사용자의 요청을 받는 Thread 한개 생성. 스레드마다 할당되는 ThreadLocal 이라는 스레드전역 저장소에 저장됨.
+3. 해당 Thread 는 인증을 시도. (여기서 인증필터들의 구현체들이 인증하는 것.)
+4. 인증실패 --> SecurityContextHolder.clearContext() 로 SecurityContextHolder 안에 있는 SecurityContext 객체를 null 로 초기화함.
+   인증성공 --> 인증필터가 SecurityContextHolder 안의 SecurityContext 객체안에다가 최종적으로 인증에 성공한 Authentication 객체를 담음.
+               Authentication 객체안 Principal 에는 UserDetails, Credentials 에는 "" , Authorities 에는 권한목록, Authenticated 에는 True 가 담겨있음.
+5. 최종적으로 SecurityContext 는 SpringSecurityContext 라는 이름으로 HttpSession 에 저장됨.
+
+- 정리
+1. ThreadLocal 는 SecurityContextHolder 담고 있다.
+2. SecurityContextHolder 에는 SecurityContext 가 저장된다.
+3. 또한 SecurityContext 는 HttpSession 에도 저장된다.
+* HttpSession -> SecurityContext -> Authentication -> User
+* ThreadLocal -> SecurityContextHolder -> SecurityContext -> Authentication -> User
+* SecurityContext 라는 객체는 Session 에도 저장되는데, 실제로 인증된 사용자가 인증 이후, 사이트에 접속할때는
+  Session 에 저장된 SecurityContext 객체를 갖고와서 다시금 ThreadLocal 에 저장하는 식으로 처리가 됨.
+
+- info
+SecurityContextHolder
+ThreadLocalSecurityContextHolderStrategy
+SecurityContext
+SecurityContextImpl
+HttpSessionSecurityContextRepository
+SecurityContextPersistenceFilter (Deprecated)
