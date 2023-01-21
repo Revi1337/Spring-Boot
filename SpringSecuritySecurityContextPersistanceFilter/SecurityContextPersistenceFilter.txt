@@ -1,0 +1,28 @@
+// SecurityContextPersistenceFilter
+인증된 사용자든, 익명의 사용자든 관계없이 매 요청을 받게됨.
+
+- 역할
+1. SecurityContext 객체의 생성과 저장 그리고 조회의 역할을 함
+2. 공통적인 역할로는 SecurityContext 객체를 SecurityContextHolder 에 저장하는 하는 것임. 근데
+   익명사용자나, 인증시일때는 SecurityContext 객체를 새로 생성하여 SecurityContextHolder 에 저장하지만,
+   인증 이후에는 Session 에서 SecurityContext 를 꺼내고 SecurityContextHolder 저장함.
+
+- 익명 사용자
+1. 새로운 SecurityContext 객체를 생성하여 SecurityContextHolder 에 저장
+2. AnonymousAuthenticationFilter 에서 AnonymousAuthenticationToken 객체를 SecurityContext 에 저장
+
+- 인증 시
+1. 새로운 SecurityContext 객체를 생성하여 SecurityContextHolder 에 저장
+2. UsernamePasswordAuthenticationFilter 에서 인증 성공 후, SecurityContext 에 UsernamePasswordAuthenticationToken 객체를 저장
+3. 인증이 최종 완료되면 Session 에 SecurityContext 저장 (Session 에 SecurityContext 를 저장하는 것은 인증필터가 아니라 SecurityContextPersistenceFilter 임)
+
+- 인증 후
+1. Session 에서 SecurityContext 를 꺼내어 SecurityContextHolder 에서 저장
+2. SecurityContext 안에 Authentication 객체가 존재하면 계속 인증을 유지함
+
+- 최종 응답 시 공통
+1. SecurityContextHolder.clearContext()
+
+- INFO
+SecurityContextPersistenceFilter
+HttpSessionSecurityContextRepository
