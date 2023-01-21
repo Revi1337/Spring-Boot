@@ -28,8 +28,8 @@ SecurityContext 를 감싸고있는 클래스.
 1. ThreadLocal 는 SecurityContextHolder 담고 있다.
 2. SecurityContextHolder 에는 SecurityContext 가 저장된다.
 3. 또한 SecurityContext 는 HttpSession 에도 저장된다.
-* HttpSession -> SecurityContext -> Authentication -> User
-* ThreadLocal -> SecurityContextHolder -> SecurityContext -> Authentication -> User
+* HttpSession -> SecurityContext -> Authentication -> UserDetails SecurityContextHolder 
+* SecurityContextHolder -> ThreadLocal -> SecurityContext -> Authentication -> UserDetails
 * SecurityContext 라는 객체는 Session 에도 저장되는데, 실제로 인증된 사용자가 인증 이후, 사이트에 접속할때는
   Session 에 저장된 SecurityContext 객체를 갖고와서 다시금 ThreadLocal 에 저장하는 식으로 처리가 됨.
 
