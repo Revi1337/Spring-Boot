@@ -1,0 +1,43 @@
+// Authentication 객체 (Interface 임)
+- 당신이 누군지 증명하는 것을 의미
+- 사용자의 인증 정보르 저장하는 토큰 개념
+- 인증 시 id & passwd 를 담고 인증 검증을 위해 전달되어 사용됨. (UsernamePasswordAuthenticationToken)
+- 인증 후 최종 인증 결과(user 객체, 권한정보)를 담고 SecurityContext 에 저장되어 전역적으로 참조가 가능함
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication()
+
+- 구조
+    1. principal : 사용자 ID(인증 전) 혹은 User 객체(인즣 후)를 저장
+    2. credentials : 대체로 사용자 Passwd
+    3. authorities : 인증된 사용자의 권한 목록
+    4. details : 인증 부가정보 (사용자가 가진 인증정보외 다른 etc 데이터)
+    5. Authenticated : 인증 여부
+
+- 순서
+    결과적으로 요청으로 username, password 파람이 들어오면 UsernamePasswordAuthenticationFilter 는 Authentication 를 만듬 (상세는 아래와 같음)
+    2. UsernamePasswordAuthenticationFilter 는 Authentication 를 만드는데, 이 안의 principal 에 ID , credentials 에 passwd 를 저장함.
+       그리고 들어온 request 와 완성된 Authentication 를 결합하고 AuthenticationManger 에게 인증을 부탁.
+    3. AuthenticationManger 는 AuthenticationProvider 에게 인증을 위임함.
+    4. 인증이 성공하면 UsernamePasswordAuthenticationFilter 는 동일한 타입인 Authentication 를 AuthenticationManger 에게 리턴받는데
+       그 Authentication 안의 principal 에는 최종인증성공한 User 객체의결과인 UserDetails 가 들어있음.
+       credentials passwd 를 담는데, 보안상 비워두기도함. 이제 authorities 에는 권한목록들이 들어있음. 마지막으로 Authenticated 에는 True 가 들어있음.
+    5. 이제 최종인증결과가 담긴 Authentication 객체를 SecurityContext 에 저장함.
+    6. 이제 이 Authentication 인증 객체는 전역적으로 사용할수 있게 됨. (그 이유는 Authentication 가 저장되는 SecurityContext 는 ThreadLocal 이라는 저장소에 저장하기때문임)
+
+- 정리
+    인증 전 Authentication 의 principal 에는 id, Credentials 에는 passwd, Authorities 에는 "", Authentication 에는 false 가 담겨있고
+    인증 후에는 principal 에는 UserDetails, Credentials 에는 passwd 혹은 비어있고, Authorities 에는 권한목록들, Authentication 에는 True 가 담겨있음
+
+- Info
+* UsernamePasswordAuthenticationToken, RememberMeAuthenticationToken 는 Authentication 의 구현체임
+* 앞서 설명한 인증되는 Authentication 객체는 로그인 방식에 따라 다름.
+  하지만 UsernamePasswordAuthenticationToken 든 RememberMeAuthenticationToken 이든결과적으로는 Authentication 의 구현체들이기떄문에 호환이 가능함.
+
+- 관련 class, interface 들
+UsernamePasswordAuthenticationFilter
+UsernamePasswordAuthenticationToken
+AbstractUserDetailsAuthenticationProvider
+Authentication
+Principal
+ProviderManager
+AuthenticationManager
+AbstractSecurityInterceptor
