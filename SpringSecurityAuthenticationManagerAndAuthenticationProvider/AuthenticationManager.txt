@@ -1,0 +1,38 @@
+// AuthenticationManager (인증관리자)
+
+1. 인증처리를 하는 AuthenticationFilter 로부터 인증처리를 지시받는 첫번째 인터페이스임. (실제적으로는 인증을 처리하진않지만.. 인증 총관리자임 ㅇㅇ)
+2. AuthenticationFilter 가 ID, PASSWD 를 담은 Authentication 객체를 AuthenticationManager 에게 인증을 요청하는 요청하면
+   AuthenticationManager 는 AuthenticationProvider 에게 인증을 위임함. (실질적인 인증은 AuthenticationProvider 임)
+3. AuthenticationManager 의 구현체는 ProviderManager 인데 ProviderManager 는 이름에서 알 수 있듯이,
+   실직적인 인증을 처리하는 AuthenticationProvider 를 포함한 AuthenticationProvider 의 구현체들을 총 관리하는 인터페이스임.
+   한마디로 ProviderManager 가 AuthenticationProvider 의 구현체들을 선택해서 사용함.
+4. AuthenticationProvider 를 구현한 구현체들은 몇가지가 있는데, DaoAuthenticationProvider, RememberMeAuthenticationProvider 등이 있음.
+   실제로 인증을 수행할 때 ProviderManager 가 AuthenticationProvider 의 구현체들을 선택하는 기준은 사용자가 로그인요청을 한 방식에 달려있음.
+   formLogin 이면 DaoAuthenticationProvider 가 인증하고, RememberMe 이면 RememberMeAuthenticationProvider 가 인증함.
+   Oauth 방식으로 로그인하는 요청이 오면 ProviderManger 는 Oauth 인증을 처리할 AuthenticationProvider 구현체가 없기 때문에
+   자기 속성에 있는 parent 에 저장되어있는 부모 ProviderManager 를 다시 탐색해 Oauth 인증을 처리할 수 있는 ProviderManager 가 있으면, 해당 AuthenticationProvider 에게 인증을 위임함.
+
+- 정리
+1. AuthenticationManager 는 껍데기일뿐... AuthenticationProvider 에게 인증위임을 포함해 AuthenticationFilter 에게 Authentication 객체 반환 등 모든 일은 자신의 구현체인 ProviderManager 가 함.
+2. AuthenticationProvider 도 껍데기일뿐... 실제적인 인증.. 은 자신의 구현체인 DaoAuthenticationProvider, RememberMeAuthenticationProvider 가 수행함.
+
+- 최종 정리
+1. Filter -> Manager : 인증객체를 생성하고 인증요청
+2. Manager -> Provider -> userDetailsService : 인증 위임. provider 에서 userDetailsService 를 사용하여 실제적인 id passwd 검증하고 인증객체 반환 (UserDetails --> Authentication)
+3. Provider -> Manager : 인증객체를 다시 Manager 에게 전달
+4. Manager -> Filter : 인증객체를 다시 Filter 에게 전달
+5. Filter -> SecurityContext : 인증객체가 전역적으로 사용될 수 있도록 SecurityContext 에 저장
+6. SecurityContext -> Session
+
+- INFO
+AuthenticationFilter (UsernamePasswordAuthenticationFilter, AnonymousAuthenticationFilter)
+AuthenticationManager (ProviderManager)
+AuthenticationProvider (DaoAuthenticationProvider, RememberMeAuthenticationProvider)
+AuthenticationManagerBuilder - AuthenticationManager 객체를 생성하는 Builder (AuthenticationProvider 를 추가할 수 있음.)
+
+- DEBUGGING
+UsernamePasswordAuthenticationFilter
+ProviderManager
+AbstractUserDetailsAuthenticationProvider
+DaoAuthenticationProvider
+InMemoryUserDetailsManager
