@@ -1,0 +1,19 @@
+// LogoutFilter
+1. Logout Request 가 들어옴. (원칙적으로 POST 방식이 맞음. GET 으로 보낼 수도있긴함. 별도로 구현해야함.)
+2. LogoutFilter 가 요청을 받고, 그 안의 RequestMatcher 가 현재 로그아웃 요청이 /logout 페이지로 접근하고 있는지 검사함.
+   CompositeLogoutHandler 가 for 문을 돌면서 존재하는 LogoutHandler 타입의 핸들러에 logout() 메서드를 실행시킴.
+   불일치 --> LogoutFilter 가 doFilter 수행하여 다음 필터로 이동. (로그아웃 처리 X)
+   일치 --> LogoutFilter 가 SecurityContext 안의 Authentication 를 꺼내와서 SecurityContextLogoutHandler 에게 전달
+3. SecurityContextLogoutHandler 가 세션 무효화, 쿠키 삭제, SecurityContextHolder.clearContext() 를 수행하여 SecurityContext 를 삭제하고 Authentication 객체로 null 로 초기화.
+   (GET 방식으로 로그아웃 처리할때도 SecurityContextLogoutHandler 를 활용하여 로그아웃처리가 가능함. LogoutHandler 를 구현하면 우리가 만든거 먼저 수행)
+4. 성공적으로 로그아웃이 진행되면, 지원하는 LogoutSuccessHandler(SimpleUrlLogoutSuccessHandler) 를 호출해서 실행.
+
+// Associate
+LogoutHandler (CompositeLogoutHandler, SecurityContextLogoutHandler)
+LogoutSuccessHandler (SimpleUrlLogoutSuccessHandler)
+
+// DEBUG
+LogoutFilter (@Override doFilter() : Line 89, doFilter() : Line 94, 95, 99, 100)
+CompositeLogoutHandler (logout() : Line 54)
+SecurityContextLogoutHandler (logout() : Line 63, 71)
+SimpleUrlLogoutSuccessHandler (onLogoutSuccess() : Line 41)
