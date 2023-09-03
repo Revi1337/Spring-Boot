@@ -1,0 +1,7 @@
+env:
+  values:
+#      username: environment-user
+      password: environment-user-password
+      port: 3306
+      options: option1, option2, option3
+      timeout: 5s
