@@ -1,0 +1,51 @@
+spring:
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+logging:
+  level:
+    sql: debug
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+  datasource:
+    url: jdbc:h2:tcp://localhost/~/apartribe;MODE=MySQL
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true           # ?? ? : schema.sql -> data.sql -> ddl-auto  ?? ? : schema.sql -> ddl-auto -> data.sql
+  sql:                                              # h2 ?? ????? ???????, always ? ?????? ??. ?????? schema.sql, data.sql ? ???? ???.
+    init:
+      mode: always
+#      schema-locations: classpath:db/h2/ddl.sql     # schema.sql ? ???? (DDL ?? ?? ??)
+      data-locations: classpath:db/h2/dml.sql       # data.sql ? ???? (DML ?? ?? ??)
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://localhost:4444/demo?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1337
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create                               # TODO ????? ??? none ?? validate ? ??? ?.
+    defer-datasource-initialization: true            # TODO ????? ??? ??? ?.
+  sql:
+    init:
+      mode: always                                   # TODO ????? ??? ??? ?.

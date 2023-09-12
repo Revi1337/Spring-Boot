@@ -1,0 +1,16 @@
+version: '3'
+services:
+  db:
+    container_name: SQLInitialize
+    image: mysql:8-oracle
+    restart: always
+    environment:
+      TZ: Asia/Seoul
+      MYSQL_DATABASE: apartribe         # 초기 DATABASE 생성
+      MYSQL_USER: test-user             # 사용자 USERNAME 설정
+      MYSQL_PASSWORD: test-user-pw      # 사용자 PASSWORD 설정
+      MYSQL_ROOT_PASSWORD: 1337         # 루트 비번 설정
+    ports:
+      - "4444:3306"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
